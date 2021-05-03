@@ -156,6 +156,7 @@ func ExecuteNewCopyJobPartOrder(order common.CopyJobPartOrderRequest) common.Cop
 		InMemoryTransitJobState{
 			credentialInfo: order.CredentialInfo,
 		})
+	jpm.SetContentTypeMap(order.ContentTypeMap)
 	// Supply no plan MMF because we don't have one, and AddJobPart will create one on its own.
 	jpm.AddJobPart(order.PartNum, jppfn, nil, order.SourceRoot.SAS, order.DestinationRoot.SAS, true) // Add this part to the Job and schedule its transfers
 

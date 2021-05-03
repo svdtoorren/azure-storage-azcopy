@@ -155,6 +155,8 @@ type rawCopyCmdArgs struct {
 	// Key is present in AzureKeyVault and Azure KeyVault is linked with storage account.
 	// Provided key name will be fetched from Azure Key Vault and will be used to encrypt the data
 	cpkScopeInfo string
+
+	contentTypeMap string // Path to json file containing mime type mapping. This will override the mime types we fetch from registry
 }
 
 func (raw *rawCopyCmdArgs) parsePatterns(pattern string) (cookedPatterns []string) {
@@ -616,6 +618,12 @@ func (raw rawCopyCmdArgs) cook() (cookedCopyCmdArgs, error) {
 		return cooked, err
 	}
 
+	if raw.contentTypeMap != "" {
+		cooked.contentTypeMap, err = getContentTypeMapFromFile(raw.contentTypeMap)
+		if err != nil {
+			return cooked, fmt.Errorf("Could not read custom content type mappings. %s", err)
+		}
+	}
 	// check for the flag value relative to fromTo location type
 	// Example1: for Local to Blob, preserve-last-modified-time flag should not be set to true
 	// Example2: for Blob to Local, follow-symlinks, blob-tier flags should not be provided with values.
@@ -1055,6 +1063,8 @@ type cookedCopyCmdArgs struct {
 	includeDirectoryStubs bool
 
 	cpkOptions common.CpkOptions
+
+	contentTypeMap map[string]string
 }
 
 func (cca *cookedCopyCmdArgs) isRedirection() bool {
@@ -1732,6 +1742,7 @@ func init() {
 	cpCmd.PersistentFlags().StringVar(&raw.contentDisposition, "content-disposition", "", "Set the content-disposition header. Returned on download.")
 	cpCmd.PersistentFlags().StringVar(&raw.contentLanguage, "content-language", "", "Set the content-language header. Returned on download.")
 	cpCmd.PersistentFlags().StringVar(&raw.cacheControl, "cache-control", "", "Set the cache-control header. Returned on download.")
+	cpCmd.PersistentFlags().StringVar(&raw.contentTypeMap, "content-type-map", "", "Path to json file containing content type mappings. Implies no-guess-mime-type and will override the OS defaults mime-mappings.")
 	cpCmd.PersistentFlags().BoolVar(&raw.noGuessMimeType, "no-guess-mime-type", false, "Prevents AzCopy from detecting the content-type based on the extension or content of the file.")
 	cpCmd.PersistentFlags().BoolVar(&raw.preserveLastModifiedTime, "preserve-last-modified-time", false, "Only available when destination is file system.")
 	cpCmd.PersistentFlags().BoolVar(&raw.preserveSMBPermissions, "preserve-smb-permissions", false, "False by default. Preserves SMB ACLs between aware resources (Windows and Azure Files). For downloads, you will also need the --backup flag to restore permissions where the new Owner will not be the user running AzCopy. This flag applies to both files and folders, unless a file-only filter is specified (e.g. include-pattern).")

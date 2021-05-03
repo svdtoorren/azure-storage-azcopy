@@ -302,6 +302,8 @@ type jobPartMgr struct {
 	atomicTransfersSkipped   uint32
 
 	cpkOptions common.CpkOptions
+
+	contentTypeMap map[string]string
 }
 
 func (jpm *jobPartMgr) getOverwritePrompter() *overwritePrompter {
@@ -640,6 +642,9 @@ var builtinTypes = map[string]string{
 func (jpm *jobPartMgr) inferContentType(fullFilePath string, dataFileToXfer []byte) string {
 	fileExtension := filepath.Ext(fullFilePath)
 
+	if contentType, ok := (jpm.contentTypeMap)[strings.ToLower(fileExtension)]; ok {
+		return strings.Split(contentType, ";")[0]
+	}
 	// short-circuit for common static website files
 	// mime.TypeByExtension takes the registry into account, which is most often undesirable in practice
 	if override, ok := builtinTypes[strings.ToLower(fileExtension)]; ok {

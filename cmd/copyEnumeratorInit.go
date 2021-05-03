@@ -51,6 +51,7 @@ func (cca *cookedCopyCmdArgs) initEnumerator(jobPartOrder common.CopyJobPartOrde
 	jobPartOrder.CpkOptions = cca.cpkOptions
 	jobPartOrder.PreserveSMBPermissions = cca.preserveSMBPermissions
 	jobPartOrder.PreserveSMBInfo = cca.preserveSMBInfo
+	jobPartOrder.ContentTypeMap = cca.contentTypeMap
 
 	// Infer on download so that we get LMT and MD5 on files download
 	// On S2S transfers the following rules apply:

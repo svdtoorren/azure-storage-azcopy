@@ -80,6 +80,7 @@ type IJobMgr interface {
 	HttpClient() *http.Client
 	PipelineNetworkStats() *pipelineNetworkStats
 	getOverwritePrompter() *overwritePrompter
+	SetContentTypeMap(map[string]string)
 	common.ILoggerCloser
 
 	/* Status related functions */
@@ -223,6 +224,8 @@ type jobMgr struct {
 	// list of transfer mentioned to exclude while resuming the job
 	exclude map[string]int
 
+	contentTypeMap map[string]string
+
 	// only a single instance of the prompter is needed for all transfers
 	overwritePrompter *overwritePrompter
 
@@ -353,7 +356,8 @@ func (jm *jobMgr) AddJobPart(partNum PartNumber, planFile JobPartPlanFileName, e
 		destinationSAS: destinationSAS, pacer: JobsAdmin.(*jobsAdmin).pacer,
 		slicePool:        JobsAdmin.(*jobsAdmin).slicePool,
 		cacheLimiter:     JobsAdmin.(*jobsAdmin).cacheLimiter,
-		fileCountLimiter: JobsAdmin.(*jobsAdmin).fileCountLimiter}
+		fileCountLimiter: JobsAdmin.(*jobsAdmin).fileCountLimiter,
+		contentTypeMap:   jm.contentTypeMap,}
 	// If an existing plan MMF was supplied, re use it. Otherwise, init a new one.
 	if existingPlanMMF == nil {
 		jpm.planMMF = jpm.filename.Map()
@@ -450,6 +454,10 @@ func (jm *jobMgr) PipelineNetworkStats() *pipelineNetworkStats {
 func (jm *jobMgr) SetIncludeExclude(include, exclude map[string]int) {
 	jm.include = include
 	jm.exclude = exclude
+}
+
+func (jm *jobMgr) SetContentTypeMap(m map[string]string) {
+	jm.contentTypeMap = m
 }
 
 // Returns the list of transfer mentioned to include / exclude

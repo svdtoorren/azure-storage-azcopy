@@ -22,7 +22,9 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -207,4 +209,16 @@ func startsWith(s string, t string) bool {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 type s3URLPartsExtension struct {
 	common.S3URLParts
+}
+
+func getContentTypeMapFromFile(path string) (map[string]string, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret map[string]string
+	err = json.Unmarshal(data, &ret)
+
+	return ret, err
 }
